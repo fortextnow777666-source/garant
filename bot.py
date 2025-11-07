@@ -1142,7 +1142,13 @@ def webhook():
             json_data = request.get_json()
             if json_data:
                 update = Update.de_json(json_data, bot_application.bot)
-                bot_application.process_update(update)
+                # Создаем event loop для асинхронного выполнения
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    loop.run_until_complete(bot_application.process_update(update))
+                finally:
+                    loop.close()
         except Exception as e:
             print(f"Error processing webhook: {e}")
     return 'OK'
