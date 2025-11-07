@@ -2,6 +2,7 @@ import json
 import os
 import secrets
 import string
+import asyncio
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
 from flask import Flask, request
@@ -1112,34 +1113,6 @@ def create_bot_application():
 # Создаем экземпляр бота
 bot_application = create_bot_application()
 
-# Flask маршруты
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    """Обработчик вебхуков от Telegram"""
-    if request.headers.get('content-type') == 'application/json':
-        json_string = request.get_data().decode('utf-8')
-        update = Update.de_json(json_string, bot_application.bot)
-        bot_application.process_update(update)
-    return 'OK'
-
-@app.route('/set_webhook', methods=['GET'])
-def set_webhook():
-    """Установка вебхука (вызовите этот URL один раз после деплоя)"""
-    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
-    result = bot_application.bot.set_webhook(webhook_url)
-    return f"Webhook set to: {webhook_url}<br>Result: {result}"
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Health check для Render"""
-    return "OK"
-
-import asyncio
-
 def setup_webhook():
     """Синхронная функция для установки вебхука"""
     webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
@@ -1155,6 +1128,37 @@ def setup_webhook():
     else:
         print("Не удалось установить webhook - неверный URL")
 
+# Flask маршруты
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    """Обработчик вебхуков от Telegram"""
+    if request.headers.get('content-type') == 'application/json':
+        try:
+            # Получаем JSON данные
+            json_data = request.get_json()
+            if json_data:
+                update = Update.de_json(json_data, bot_application.bot)
+                bot_application.process_update(update)
+        except Exception as e:
+            print(f"Error processing webhook: {e}")
+    return 'OK'
+
+@app.route('/set_webhook', methods=['GET'])
+def set_webhook():
+    """Установка вебхука (вызовите этот URL один раз после деплоя)"""
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    result = bot_application.bot.set_webhook(webhook_url)
+    return f"Webhook set to: {webhook_url}<br>Result: {result}"
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check для Render"""
+    return "OK"
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 10000))
     
@@ -1163,4 +1167,3 @@ if __name__ == "__main__":
     
     print(f"Бот запущен на порту {port}!")
     app.run(host='0.0.0.0', port=port)
-
