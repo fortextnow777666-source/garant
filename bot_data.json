@@ -1,0 +1,81 @@
+{
+    "users": {
+        "6958755449": {
+            "language": "ru",
+            "ton_wallet": "UQAN_enXjQLGm3sIYpwB91iKzpHPLebhlzyHD8d",
+            "card": "213231241243543",
+            "ref_code": "ref_6958755449_d2cf5f60",
+            "ref_count": 1,
+            "ref_earned": 0.1,
+            "username": "rxksyan",
+            "successful_deals": 39
+        },
+        "1440079021": {
+            "language": "ru",
+            "ton_wallet": "цфыавяшдигжщоиавфсыЧЫавпропфукпвр",
+            "card": "56457568678",
+            "ref_code": "ref_1440079021_b55fc2a2",
+            "ref_count": 0,
+            "ref_earned": 0.0,
+            "username": "Mefforuuu",
+            "successful_deals": 1
+        },
+        "8440353389": {
+            "language": "ru",
+            "ton_wallet": null,
+            "card": null,
+            "ref_code": "ref_8440353389_88c64a78",
+            "ref_count": 0,
+            "ref_earned": 0.0,
+            "username": "Godfleks2"
+        },
+        "5784259061": {
+            "language": "ru",
+            "ton_wallet": null,
+            "card": "2200000000000",
+            "ref_code": "ref_5784259061_430adc2c",
+            "ref_count": 0,
+            "ref_earned": 0.0,
+            "username": "SunsetUsdt",
+            "successful_deals": 650
+        },
+        "8386864592": {
+            "language": "ru",
+            "ton_wallet": "Ьл",
+            "card": null,
+            "ref_code": "ref_8386864592_afb222d4",
+            "ref_count": 0,
+            "ref_earned": 0.0,
+            "username": "Mashawork"
+        }
+    },
+    "deals": {
+        "2FTGZU5T": {
+            "user1_id": 5784259061,
+            "user1_username": "SunsetUsdt",
+            "amount": "1000",
+            "description": "10 Кепок",
+            "payment_method": "card",
+            "status": "active",
+            "deal_link": "https://t.me/mygerant_bot?start=deal_2FTGZU5T"
+        },
+        "WX9KDTJC": {
+            "user1_id": 6958755449,
+            "user1_username": "rxksyan",
+            "amount": "21",
+            "description": "пупа",
+            "payment_method": "card",
+            "status": "waiting_admin",
+            "deal_link": "https://t.me/mygerant_bot?start=deal_WX9KDTJC",
+            "user2_id": 1440079021,
+            "user2_username": "Mefforuuu"
+        }
+    },
+    "admins": [
+        "123456789",
+        "8440353389",
+        "5784259061",
+        "6958755449",
+        "1440079021"
+    ]
+}
