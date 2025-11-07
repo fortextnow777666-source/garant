@@ -3,11 +3,9 @@ import os
 import secrets
 import string
 import asyncio
+from aiohttp import web
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
-from flask import Flask, request
-
-app = Flask(__name__)
 
 BOT_TOKEN = "8289354732:AAFWkTDFPWi7ef8Z1doenceorlD988AtL_c"
 SUPPORT_USERNAME = "@SunsetUsdt"
@@ -202,134 +200,6 @@ ID сделки: #{deal_id}
         'enter_successful_deals': "Введите количество успешных сделок для добавления:",
         'successful_deals_added': "✅ Количество успешных сделок обновлено!",
         'admin_contact_info': "🛡️ Администратор сделки: {admin_username} - обратитесь к нему после получения уведомления об успешной оплате",
-    },
-    'en': {
-        'welcome': """Welcome to ELF OTC – reliable P2P guarantee
-
-- Buy and sell anything – safely!  
-From Telegram gifts and NFTs to tokens and fiat – transactions go smoothly and risk-free.
-
-- Convenient wallet management  
-- Referral system  
-- Secure guaranteed deals  
-
-Choose the desired section below:""",
-        'my_deals': "📋 My Deals",
-        'manage_details': "💼 Manage Details",
-        'create_deal': "💰 Create Deal",
-        'referral_link': "👥 Referral Link",
-        'change_language': "🌐 Change Language",
-        'support': "🆘 Support",
-        'no_active_deals': "📭 You have no active deals yet.",
-        'choose_action': "Choose action:",
-        'add_ton_wallet': "➕ Add TON Wallet",
-        'add_card': "➕ Add Card",
-        'view_details': "👀 View Details",
-        'back': "🔙 Back",
-        'receive_card': "💳 Receive to Card",
-        'receive_ton': "👛 Receive to TON Wallet",
-        'choose_payment_method': "Choose payment method:",
-        'no_details': "❌ Please add payment details first!",
-        'no_card': "❌ Please add a card first!",
-        'no_ton': "❌ Please add TON wallet first!",
-        'active_deal_exists': "❌ You already have an active deal! Complete it before creating a new one.",
-        'enter_ton_wallet': "Enter your TON wallet:",
-        'enter_card': "Enter your card number:",
-        'ton_added': "✅ TON wallet added!",
-        'card_added': "✅ Card added!",
-        'enter_deal_amount': "Enter deal amount:",
-        'enter_deal_description': "Describe what the deal is for (product/service):",
-        'deal_created': """✅ Deal created!
-
-Deal ID: #{deal_id}
-Amount: {amount}
-Payment method: {payment_method}
-Description: {description}
-
-Link for the second participant:
-{deal_link}
-
-Share this link with the second participant.""",
-        'referral_info': """Your referral link:
-
-{ref_link}
-
-Referrals count: {ref_count}  
-Earned from referrals: {ref_earned} TON""",
-        'choose_language': "Choose language:",
-        'language_changed': "Language changed to English!",
-        'support_text': """🆘 Support
-
-For any questions, contact our specialist:""",
-        'contact_support': "📞 Contact Support",
-        'delete_deal': "❌ Delete Deal",
-        'exit_deal': "🚪 Exit Deal",
-        'confirm_delete': "❓ Are you sure you want to delete deal #{deal_id}?",
-        'confirm_exit': "❓ Are you sure you want to exit deal #{deal_id}?",
-        'yes_delete': "✅ Yes, delete",
-        'no_delete': "❌ No, keep",
-        'yes_exit': "✅ Yes, exit",
-        'no_exit': "❌ No, stay",
-        'deal_deleted': "✅ Deal deleted!",
-        'delete_cancelled': "✅ Deletion cancelled.",
-        'exited_deal': "✅ You exited the deal!",
-        'exit_cancelled': "✅ You stayed in the deal.",
-        'deal_not_found': "❌ Deal not found!",
-        'no_rights': "❌ Deal not found or you don't have rights!",
-        'admin_taken': "❌ Cannot delete a deal that has been taken by an admin!",
-        'admin_view_deals': "📋 View Deals",
-        'admin_take_deal': "✅ Take Deal",
-        'admin_complete_deal': "🏁 Complete Deal",
-        'admin_add_successful_deals': "➕ Add Successful Deals",
-        'no_active_deals_admin': "📭 No active deals",
-        'enter_deal_id_take': "Enter the deal ID you want to take:",
-        'enter_deal_id_complete': "Enter the deal ID to complete:",
-        'deal_taken': "✅ You took deal #{deal_id}. Contact participants in DM",
-        'deal_completed': "✅ Deal #{deal_id} completed and removed from the system!",
-        'deal_not_found_admin': "❌ Deal not found!",
-        'you_are_admin': "✅ You are now an admin!",
-        'cancel': "Cancelled",
-        'details_not_added': "Payment details not added",
-        'ton_wallet': "TON wallet: {wallet}",
-        'card': "Card: {card}",
-        'buyer_deal_info': """Deal Information #{deal_id}
-
-You are the buyer in the deal.
-✔ Seller: @{seller_username} ({seller_id})
-• Successful deals: {successful_deals}
-
-• You are buying: {description}
-
-📌 Payment address:
-{ton_wallet}
-
-📌 Amount to pay: {amount} TON
-✅ Payment comment (memo):
-{deal_id}
-
-🔍 Please verify the data before payment. Comment (memo) is mandatory!
-
-If you sent a transaction without a comment, fill out the form — @OtcElfSup""",
-        'open_tonkeeper': "👛 Open Tonkeeper",
-        'confirm_payment': "✅ Confirm Payment",
-        'payment_confirmed_seller': """💸 Buyer confirmed payment!
-
-Deal #{deal_id}
-Buyer: @{buyer_username}
-Amount: {amount} TON
-
-📦 Send the gift to admin: {admin_username}""",
-        'payment_confirmed_buyer': """✅ Payment confirmed!
-
-Wait for seller's receipt confirmation.""",
-        'wait_admin_contact': """⏳ Wait for administrator connection
-
-Admin will contact you to confirm the deal.""",
-        'waiting_for_admin': "⏳ Wait for administrator connection to confirm payment",
-        'only_admin_can_confirm': "❌ Only the deal administrator can confirm payment",
-        'enter_successful_deals': "Enter the number of successful deals to add:",
-        'successful_deals_added': "✅ Successful deals count updated!",
-        'admin_contact_info': "🛡️ Deal administrator: {admin_username} - contact them to confirm payment",
     }
 }
 
@@ -1113,65 +983,54 @@ def create_bot_application():
 # Создаем экземпляр бота
 bot_application = create_bot_application()
 
-def setup_webhook():
-    """Синхронная функция для установки вебхука"""
-    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
-    if webhook_url.startswith("https://"):
-        # Используем asyncio для асинхронного вызова
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(bot_application.bot.set_webhook(webhook_url))
-            print(f"Webhook установлен: {webhook_url}")
-        finally:
-            loop.close()
-    else:
-        print("Не удалось установить webhook - неверный URL")
-
-# Flask маршруты
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
+async def webhook_handler(request):
     """Обработчик вебхуков от Telegram"""
-    if request.headers.get('content-type') == 'application/json':
+    if request.content_type == 'application/json':
         try:
-            json_data = request.get_json()
-            if json_data:
-                update = Update.de_json(json_data, bot_application.bot)
-                
-                # Создаем и запускаем event loop
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    loop.run_until_complete(bot_application.process_update(update))
-                finally:
-                    loop.close()
-                
+            data = await request.json()
+            update = Update.de_json(data, bot_application.bot)
+            await bot_application.process_update(update)
+            return web.Response(text='OK')
         except Exception as e:
             print(f"Error processing webhook: {e}")
-    return 'OK'
+            return web.Response(text='Error', status=500)
+    return web.Response(text='Invalid content type', status=400)
 
-@app.route('/set_webhook', methods=['GET'])
-def set_webhook():
-    """Установка вебхука (вызовите этот URL один раз после деплоя)"""
-    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
-    result = bot_application.bot.set_webhook(webhook_url)
-    return f"Webhook set to: {webhook_url}<br>Result: {result}"
-
-@app.route('/health', methods=['GET'])
-def health_check():
+async def health_check(request):
     """Health check для Render"""
-    return "OK"
+    return web.Response(text='OK')
 
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 10000))
-    
+async def set_webhook_handler(request):
+    """Установка вебхука"""
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    result = await bot_application.bot.set_webhook(webhook_url)
+    return web.Response(text=f"Webhook set to: {webhook_url}<br>Result: {result}")
+
+async def main():
+    """Основная функция запуска"""
     # Устанавливаем вебхук
-    setup_webhook()
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    await bot_application.bot.set_webhook(webhook_url)
+    print(f"Webhook установлен: {webhook_url}")
+    
+    # Создаем aiohttp приложение
+    app = web.Application()
+    app.router.add_post('/webhook', webhook_handler)
+    app.router.add_get('/health', health_check)
+    app.router.add_get('/set_webhook', set_webhook_handler)
+    app.router.add_get('/', health_check)
+    
+    port = int(os.environ.get('PORT', 10000))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
     
     print(f"Бот запущен на порту {port}!")
-    app.run(host='0.0.0.0', port=port)
+    
+    # Бесконечный цикл
+    while True:
+        await asyncio.sleep(3600)
 
+if __name__ == "__main__":
+    asyncio.run(main())
