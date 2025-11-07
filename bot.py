@@ -4,7 +4,9 @@ import secrets
 import string
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler, CallbackQueryHandler
+from flask import Flask, request
 
+app = Flask(__name__)
 
 BOT_TOKEN = "8289354732:AAFWkTDFPWi7ef8Z1doenceorlD988AtL_c"
 SUPPORT_USERNAME = "@SunsetUsdt"
@@ -12,9 +14,7 @@ ADMIN_USERNAME = "@SunsetUsdt"
 REFERRAL_BONUS = 0.1
 MAIN_IMAGE_PATH = "me1.jpg"
 
-
 ADDING_TON, ADDING_CARD, DEAL_AMOUNT, DEAL_DESCRIPTION, ADMIN_TAKE_DEAL, ADMIN_COMPLETE_DEAL, ADD_SUCCESSFUL_DEALS = range(7)
-
 
 DATA_FILE = "bot_data.json"
 
@@ -72,7 +72,6 @@ class Database:
             self.save_data()
 
 db = Database()
-
 
 TEXTS = {
     'ru': {
@@ -164,8 +163,6 @@ ID сделки: #{deal_id}
         'details_not_added': "Реквизиты не добавлены",
         'ton_wallet': "TON кошелек: {wallet}",
         'card': "Карта: {card}",
-        
-        
         'buyer_deal_info': """Информация о сделке #{deal_id}
 
 Вы покупатель в сделке.
@@ -176,7 +173,6 @@ ID сделки: #{deal_id}
 
 📌 Адрес для оплаты:
 {ton_wallet}
-
 
 📌 Сумма к оплате: {amount} TON
 ✅ Комментарий к платежу (мемо):
@@ -295,8 +291,6 @@ For any questions, contact our specialist:""",
         'details_not_added': "Payment details not added",
         'ton_wallet': "TON wallet: {wallet}",
         'card': "Card: {card}",
-        
-        
         'buyer_deal_info': """Deal Information #{deal_id}
 
 You are the buyer in the deal.
@@ -342,7 +336,6 @@ def get_text(user_data, key, **kwargs):
     language = user_data.get('language', 'ru')
     text = TEXTS[language].get(key, key)
     return text.format(**kwargs) if kwargs else text
-
 
 def get_main_keyboard(user_data):
     language = user_data.get('language', 'ru')
@@ -431,15 +424,12 @@ def get_support_keyboard(user_data):
     ]
     return InlineKeyboardMarkup(keyboard)
 
-
 def get_buyer_deal_keyboard(deal_id, ton_wallet, amount, user_data, deal_status='waiting_admin'):
-    
     tonkeeper_url = f"https://tonkeeper.com/"
     
     keyboard = [
         [InlineKeyboardButton(get_text(user_data, 'open_tonkeeper'), url=tonkeeper_url)],
     ]
-    
     
     if deal_status == 'in_progress':
         keyboard.append([InlineKeyboardButton(get_text(user_data, 'confirm_payment'), callback_data=f"confirm_payment_{deal_id}")])
@@ -447,7 +437,6 @@ def get_buyer_deal_keyboard(deal_id, ton_wallet, amount, user_data, deal_status=
     keyboard.append([InlineKeyboardButton(get_text(user_data, 'back'), callback_data="back_to_main")])
     
     return InlineKeyboardMarkup(keyboard)
-
 
 def generate_deal_id():
     return ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(8))
@@ -467,7 +456,6 @@ def format_user_details(user_data: dict):
     return "\n".join(details)
 
 def get_user_deals(user_id):
-    """Получает все сделки пользователя"""
     deals = db.get_all_deals()
     user_deals = []
     
@@ -476,7 +464,6 @@ def get_user_deals(user_id):
             user_deals.append((deal_id, deal))
     
     return user_deals
-
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message:
@@ -488,7 +475,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
     user_data = db.get_user(user_id)
     
-   
     if update.message and context.args:
         if context.args[0].startswith('ref_'):
             ref_code = context.args[0]
@@ -516,24 +502,20 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await message.reply_text("❌ В этой сделке уже есть второй участник!", reply_markup=get_main_keyboard(user_data))
                     return
                 
-               
                 seller_id = deal.get('user1_id')
                 seller_data = db.get_user(seller_id) if seller_id else {}
                 seller_username = deal.get('user1_username', 'Unknown')
                 successful_deals = seller_data.get('successful_deals', 0)
-                
                 
                 seller_ton_wallet = seller_data.get('ton_wallet', '')
                 if not seller_ton_wallet:
                     await message.reply_text("❌ У продавца не настроен TON кошелек!", reply_markup=get_main_keyboard(user_data))
                     return
                 
-                
                 deal['user2_id'] = user_id
                 deal['user2_username'] = update.effective_user.username
                 deal['status'] = 'waiting_admin'  
                 db.update_deal(deal_id, deal)
-                
                 
                 buyer_text = get_text(user_data, 'buyer_deal_info',
                                     deal_id=deal_id,
@@ -543,7 +525,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     description=deal.get('description', ''),
                                     ton_wallet=seller_ton_wallet,
                                     amount=deal.get('amount', ''))
-                
                 
                 if seller_id:
                     buyer_info = db.get_user(user_id)
@@ -567,7 +548,6 @@ f"""✅ К вашей сделке присоединился покупател
                 )
                 return
     
-    
     if not user_data:
         user_data = {
             'language': 'ru',
@@ -582,7 +562,6 @@ f"""✅ К вашей сделке присоединился покупател
         db.save_user(user_id, user_data)
     
     welcome_text = get_text(user_data, 'welcome')
-    
     
     if os.path.exists(MAIN_IMAGE_PATH):
         if update.message:
@@ -641,7 +620,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📝 Описание: {deal.get('description', 'N/A')}
 📊 Статус: {status_text}
 """
-            
             
             if status == 'in_progress' and deal.get('admin_username'):
                 text += f"🛡️ Админ: {deal.get('admin_username')}\n"
@@ -745,7 +723,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.delete()
         await query.message.reply_text(get_text(user_data, 'language_changed'), reply_markup=get_main_keyboard(user_data))
     
-    
     elif callback_data.startswith("confirm_delete_"):
         deal_id = callback_data.replace("confirm_delete_", "")
         deal = db.get_deal(deal_id)
@@ -763,7 +740,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             get_text(user_data, 'confirm_delete', deal_id=deal_id),
             reply_markup=get_confirm_delete_keyboard(deal_id, user_data)
         )
-    
     
     elif callback_data.startswith("delete_deal_"):
         deal_id = callback_data.replace("delete_deal_", "")
@@ -789,12 +765,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.delete()
         await query.message.reply_text(get_text(user_data, 'deal_deleted'), reply_markup=get_main_keyboard(user_data))
     
-    
     elif callback_data.startswith("keep_deal_"):
         deal_id = callback_data.replace("keep_deal_", "")
         await query.message.delete()
         await query.message.reply_text(get_text(user_data, 'delete_cancelled'), reply_markup=get_main_keyboard(user_data))
-    
     
     elif callback_data.startswith("confirm_exit_"):
         deal_id = callback_data.replace("confirm_exit_", "")
@@ -814,7 +788,6 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=get_confirm_exit_keyboard(deal_id, user_data)
         )
     
-
     elif callback_data.startswith("exit_deal_"):
         deal_id = callback_data.replace("exit_deal_", "")
         deal = db.get_deal(deal_id)
@@ -839,12 +812,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.delete()
         await query.message.reply_text(get_text(user_data, 'exited_deal'), reply_markup=get_main_keyboard(user_data))
     
-    
     elif callback_data.startswith("stay_deal_"):
         deal_id = callback_data.replace("stay_deal_", "")
         await query.message.delete()
         await query.message.reply_text(get_text(user_data, 'exit_cancelled'), reply_markup=get_main_keyboard(user_data))
-    
     
     elif callback_data.startswith("confirm_payment_"):
         deal_id = callback_data.replace("confirm_payment_", "")
@@ -854,17 +825,14 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.answer(get_text(user_data, 'deal_not_found'), show_alert=True)
             return
         
-        
         if deal.get('status') != 'in_progress':
             await query.answer(get_text(user_data, 'waiting_for_admin'), show_alert=True)
             return
-        
         
         db.update_deal(deal_id, {
             'status': 'payment_confirmed',
             'payment_confirmed': True
         })
-        
         
         seller_id = deal.get('user1_id')
         if seller_id:
@@ -878,10 +846,8 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             await context.bot.send_message(seller_id, seller_text)
         
-        
         await query.message.delete()
         await query.message.reply_text(get_text(user_data, 'payment_confirmed_buyer'), reply_markup=get_main_keyboard(user_data))
-    
     
     elif callback_data == "admin_view_deals":
         deals = db.get_all_deals()
@@ -1002,7 +968,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 'status': 'in_progress'
             })
             
-            
             user1_id = deal.get('user1_id')
             user2_id = deal.get('user2_id')
             
@@ -1014,7 +979,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if user2_id:
                 user2_data = db.get_user(user2_id)
                 admin_contact_text = get_text(user2_data, 'admin_contact_info', admin_username=f"@{admin_username}")
-                
                 
                 seller_id = deal.get('user1_id')
                 seller_data = db.get_user(seller_id) if seller_id else {}
@@ -1111,12 +1075,12 @@ async def admin_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     user_data = db.get_user(user_id)
     
-    # Добавляем пользователя в админы
     db.add_admin(user_id)
     
     await update.message.reply_text(get_text(user_data, 'you_are_admin'), reply_markup=get_admin_keyboard(user_data))
 
-def main():
+# Создаем приложение бота
+def create_bot_application():
     application = Application.builder().token(BOT_TOKEN).build()
     
     conv_handler = ConversationHandler(
@@ -1143,8 +1107,47 @@ def main():
     application.add_handler(conv_handler)
     application.add_handler(CallbackQueryHandler(handle_callback))
     
-    print("Бот запущен!")
-    application.run_polling()
+    return application
+
+# Создаем экземпляр бота
+bot_application = create_bot_application()
+
+# Flask маршруты
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    """Обработчик вебхуков от Telegram"""
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = Update.de_json(json_string, bot_application.bot)
+        bot_application.process_update(update)
+    return 'OK'
+
+@app.route('/set_webhook', methods=['GET'])
+def set_webhook():
+    """Установка вебхука (вызовите этот URL один раз после деплоя)"""
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    result = bot_application.bot.set_webhook(webhook_url)
+    return f"Webhook set to: {webhook_url}<br>Result: {result}"
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check для Render"""
+    return "OK"
 
 if __name__ == "__main__":
-    main()
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Автоматически устанавливаем вебхук при запуске
+    webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+    if webhook_url.startswith("https://"):
+        bot_application.bot.set_webhook(webhook_url)
+        print(f"Webhook установлен: {webhook_url}")
+    else:
+        print("Не удалось установить webhook - неверный URL")
+    
+    print(f"Бот запущен на порту {port}!")
+    app.run(host='0.0.0.0', port=port)
