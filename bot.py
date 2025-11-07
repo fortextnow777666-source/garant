@@ -1138,16 +1138,29 @@ def health_check():
     """Health check для Render"""
     return "OK"
 
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    
-    # Автоматически устанавливаем вебхук при запуске
+import asyncio
+
+def setup_webhook():
+    """Синхронная функция для установки вебхука"""
     webhook_url = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/webhook"
     if webhook_url.startswith("https://"):
-        bot_application.bot.set_webhook(webhook_url)
-        print(f"Webhook установлен: {webhook_url}")
+        # Используем asyncio для асинхронного вызова
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(bot_application.bot.set_webhook(webhook_url))
+            print(f"Webhook установлен: {webhook_url}")
+        finally:
+            loop.close()
     else:
         print("Не удалось установить webhook - неверный URL")
+
+if __name__ == "__main__":
+    port = int(os.environ.get('PORT', 10000))
+    
+    # Устанавливаем вебхук
+    setup_webhook()
     
     print(f"Бот запущен на порту {port}!")
     app.run(host='0.0.0.0', port=port)
+
