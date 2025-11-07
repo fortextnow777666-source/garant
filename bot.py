@@ -1138,17 +1138,18 @@ def webhook():
     """Обработчик вебхуков от Telegram"""
     if request.headers.get('content-type') == 'application/json':
         try:
-            # Получаем JSON данные
             json_data = request.get_json()
             if json_data:
                 update = Update.de_json(json_data, bot_application.bot)
-                # Создаем event loop для асинхронного выполнения
+                
+                # Создаем и запускаем event loop
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 try:
                     loop.run_until_complete(bot_application.process_update(update))
                 finally:
                     loop.close()
+                
         except Exception as e:
             print(f"Error processing webhook: {e}")
     return 'OK'
@@ -1173,3 +1174,4 @@ if __name__ == "__main__":
     
     print(f"Бот запущен на порту {port}!")
     app.run(host='0.0.0.0', port=port)
+
